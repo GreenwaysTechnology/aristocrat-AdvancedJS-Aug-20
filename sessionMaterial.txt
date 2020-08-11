@@ -1,0 +1,568 @@
+Setup :
+
+
+1.node js
+
+2.vs code
+
+
+javascript.
+
+ECMA Script -  ecama body
+
+1996 - ecma 
+
+97 - es 1 - netscap
+99 -es 3
+2005 - network programming in js - ajax
+
+2007-es 4
+2008-es 5
+2008---------node.js
+2012--Propoal for es 6-----2015
+
+es7,8......
+
+js language.
+  object based
+  functional style
+  event driven 
+pl.
+&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
+Building blocks:
+
+1.Literals and type system.
+2.functions,classes
+3.Objects
+4.Concurrency
+5.DOM
+6.Networking -ajax
+
+
+Running js code :
+
+you need js runtime
+ -browser
+ -node
+
+
+//var,let and const
+//types -number,string,boolean,undefined,function,object
+//literals -number,NaN,infinity,string,boolean,undefined,function,null,object
+
+//strings : '',"",``
+//var firstName="Subramanian";
+let firstName = "Subramanian";
+console.log("firstName " + firstName);
+console.log("firstName ", firstName);
+console.log('firstName ' + firstName);
+//es 6 : template literal
+console.log(`firstName  ${firstName}`);
+
+//numbers
+let salary = 1000;
+console.log(`Salary  ${salary}`);
+
+//undefined
+let totalWorkings;
+console.log(`totalWorkings  ${totalWorkings}`);
+//NaN : it is runtime error.
+
+let totalSalary = salary * totalWorkings;
+
+console.log(`Total Salary  ${totalSalary}`);
+
+//infinty  div/ 0
+let avgSalary = salary / 0;
+
+console.log(`Avg Salary  ${avgSalary}`);
+
+//booleans
+let isWorking = true;
+console.log(`IS Working ${isWorking}`);
+
+
+function Employee() {
+
+}
+//objects
+let customer = {
+    id: 1,
+    name: 'subramanian'
+}
+let emp = new Employee();
+
+let employee = null;
+employee = new Employee();
+
+//Basic operators
+//==,=== : 
+
+let x = "10";
+let y = 10;
+let result = x == y;
+let result1 = x === y;
+console.log(`The Result is ${result} ${result1}`)
+
+//Advanced booleans:
+/**
+ * in js everthing is true expect the following values
+ * 1.boolean false
+ * 2.0
+ * 3."" empty string
+ * 4.NaN
+ * 5.undefined
+ * 6.null
+ */
+
+let counter = 0;
+if (counter) {
+    console.log('counter is true')
+} else {
+    console.log('counter is false')
+}
+//using tenary operator
+counter ? console.log('counter is true') : console.log('counter is false')
+
+//|| -- 1 || 0 => true
+
+//booleans
+let hasProject = true;
+let status = isWorking || hasProject;
+console.log(`Status ${status}`)
+
+/**
+ * incase of or operator
+ *  if first operand is true,the result would be the first operand,else the result 
+ * would be second one.
+ */
+let start = 0;
+let gameStatus = start || 10; //true / false
+
+console.log(`gameStatus ${gameStatus}`)
+
+const pi = 90;
+//pi = 10;
+console.log(pi);
+*****************************************************************************************************
+
+functions:
+.........
+basic functions
+functional style programming
+concurrency -async programming
+scope chain
+closures
+
+-es 5 style
+-es 6 style
+
+Do you think that js has main function?
+
+js has it main method supplied by javascript engine.
+
+main method is written by dev.
+
+//functions. wraper around instructions.
+
+/**
+ * 1.basic declartion
+ * 2.function invocation
+ * 3.parameters and args
+ * 4.return values
+ *  */
+
+//function declaration
+
+function sayHello() {
+    console.log('Hello!!!');
+}
+sayHello();
+
+//parameeters and args
+//name is args; default arg
+function sayHai(name = 'default') {
+    //   var name =  name || 'default'
+    console.log(name);
+}
+//parameters
+sayHai('Subramanian');
+sayHai();
+
+//var args  ; ... rest operator
+function log(author, ...logs) {
+    //variable args : vars
+    // console.log(arguments);
+    console.log(logs);
+    logs.forEach(function (l) {
+        console.log(author, l)
+    });
+    logs.map(function (l) {
+        return l.toUpperCase();
+    }).forEach(function (l) {
+        console.log(l)
+    });
+
+}
+log('ibm', 'Page1', 'warning')
+log('google', 'Page2', 'warning', 'in the line no 24')
+/////////////////////////////////////////////////////////////////////////////////
+function square(num = 0) {
+    return num * num;
+}
+console.log(square(10, 10));
+console.log(square());
+
+function login(userName = 'admin', password = 'admin') {
+    if (userName === 'admin' && password === 'admin') {
+        return true;
+    }
+    //return false;
+    return; // undefined => false
+}
+login('admin', 'xx') ? console.log('Login success') : console.log('Login failed');
+&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
+Async programming,concurrency:
+.............................
+
+functional programming concepts and implementation.
+
+-function is literal/value.
+
+Since function is a value, 
+-can be passed to another function as parameter
+-can be assigned to a variable like num/strings
+-can be returned from another function like numbers and strings.
+
+
+Rule :
+
+ if you assign a function to a variable,that variable can be used to call that function.
+
+// how to declare function?
+/**
+ * 1. function defintion declaration
+ * 2. function is declared and assigned to a variable.
+ */
+
+// 1. function defintion declaration
+
+function sum(no1 = 0, no2 = 0) {
+    return no1 + no2;
+}
+//invocation
+console.log(sum(1, 2));
+
+//function is declared and assigned to a variable.
+//ways
+//1. with function name
+// let multiply = function multiplyfunc() {
+//     //function body
+//     let result = 10 * 10;
+//     console.log(`The Result is ${result}`);
+// };
+//multiply();
+//multiplyfunc();
+//anonmous function : function with out name
+let multiply = function (x = 0, y = 0) {
+    //function body
+    let result = x * y;
+    //console.log(`The Result is ${result}`);
+    return result;
+};
+console.log(multiply(12, 90));
+
+&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+/**
+ * 
+ * function as parameter to another function
+ * 
+ */
+
+//a=x,b=y;
+function add(a, b) {
+    console.log(a + b);
+}
+add(10, 10);
+let x = 10;
+let y = 90;
+add(x, y);
+
+
+//function declaration
+/**server=function () {
+    console.log('Http Server');
+}**/
+/**
+ * 
+ * server=httpServer
+ */
+function createServer(server) {
+    //invoke
+    server();
+}
+//function calling
+//what can be a parameter : string,number,boolean,undefined,null,nan,infinity,function,null,object
+createServer(function () {
+    console.log('Http Server');
+});
+
+let httpServer = function () {
+    console.log('Http Server');
+};
+createServer(httpServer);
+
+//////////////////////////////////////////////////////////////////////////////
+//ars and parametes, return values
+
+function createNetServer(server) {
+    let status = server('TCP  Server'); //caller
+    console.log(status);
+}
+createNetServer(function (name) {
+    console.log(name);
+    return 'Socket Ready to accept incoming Connection';
+});
+
+let netServer = function (name) {
+    console.log(name);
+    return 'Socket Ready to accept incoming Connection';
+}
+createNetServer(netServer);
+//&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
+let createDNSServer = function (server) {
+    let status = server('DNS  Server'); //caller
+    console.log(status);
+};
+createDNSServer(function (name) {
+    console.log(name);
+    return 'DNS Ready to accept incoming Connection';
+});
+
+let dnsServer = function (name) {
+    console.log(name);
+    return 'DNS Ready to accept incoming Connection';
+}
+createDNSServer(netServer);
+
+&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
+Why we need to pass function as parameter, which is right context to pass function as parameter?
+...............................................................................................
+
+Async Programming,Non blocking:
+..............................
+
+Sync and async programming.
+
+Concurrency:
+  -multi threading.
+
+
+Java script runtime arch and compoents:
+......................................
+
+javascript run time is available in two modes
+
+1.embeded mode
+   inside another programs- browsers
+
+every browser has its own js engines. but all engines works in the similar way.
+engines name;
+
+chrome- v8
+mozila - spider monkey
+ms - chakara
+
+2.standalone mode
+   js engine is distributed as standalone mode-node js
+
+node.js which uses v8 as core for building server application
+
+phases of js code
+
+1.compile time 
+2.execution time.
+
+does js code is compiled?
+
+Yes
+
+parser:
+ it is special compiler, will convert source code into a form- lexcial tree.
+   -string /ascii tree. code is represented as sequenece of tree model
+
+compiler;
+ compiler which converts tree code into assembly code.
+
+Runtime :
+ takes compiled code , initalize inside RAM.
+
+ EXecution begins
+
+
+components of runtime;
+
+
+
+1.heap
+ 
+dynamic memory allocation segment, where objects,code is kept.
+
+2.stack
+
+  IT is datastructure , LIFO
+
+-To create stackFrame which is runtime representation of method/function.
+
+
+How many frames can be active at the same time? How many threads can be active?
+
+ In javascript, only one frame can be active.
+ Javascript is single threaded runtime.
+
+if y want to run more than one frame/threads how to do that?
+
+
+Concurrency:(multi thread)
+
+Types of concurrency:
+
+1.Process level concurrency.
+
+ creating threads , manages threads on the same runtime
+
+2.Worker-thread model concurrency,Reactor pattern concurrency
+
+
+
+process level concurreny model leads sync programming
+..............
+Sync Programming :
+
+-Frames are created by main process one by one
+-after removing prvious frame only the current frame will be pushed into
+
+process level concurreny model leads blocking  programming even though you have parrel computing
+-multi threading.
+
+Blocking:
+
+ if one frame is taking lot of time, that frame blocks the entire process, blocking code.
+
+
+&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
+2.Worker-thread model concurrency,Reactor pattern concurrency : async programming/ non blocking
+...............................................................................................
+
+
+nonblocking && async programming implementation:
+
+two things we need to ensure non blocking and async.
+
+javascript and node provides an high level async apis.
+handler function should be provided to handle async results.
+
+
+
+javascript and node provides an high level async apis.
+
+common non blocking apis in browser:
+...................................
+
+1.timer apis
+2.ajax apis
+3.dom apis
+4.websocket
+...........
+
+common non blocking api in node
+
+node 95% api are non blocking.
+
+1.timers
+2.fs api
+3.web api-http
+etc......
+
+handler function should be provided to handle async results:
+............................................................
+function as parameter to another functions.
+
+
+Styles of writing non blocking /async programming:
+..................................................
+
+1.callback based - legacy and core.
+2.Promise based
+3.promise and async && await.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
