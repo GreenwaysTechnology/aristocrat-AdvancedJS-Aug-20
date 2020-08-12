@@ -503,31 +503,1716 @@ Styles of writing non blocking /async programming:
 
 
 
+1.timer apis:
+
+setTimeout
+setinterval
+
+
+//nonblocking and async :using timers
+
+//blocking 
+function sum() {
+    console.log('sum')
+}
+function divide() {
+    console.log('divide')
+}
+function delay(handler) {
+    //delayed logic : async code
+    setTimeout(handler, 5000)
+}
+sum();
+delay(function () {
+    console.log('delayed function');
+});
+divide();
+&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
+
+function delay(handler, timer = 1000) {
+    let fakeData = `Hello! ${timer}`;
+    setTimeout(handler, timer, fakeData);
+}
+delay(function (data) {
+    console.log(data);
+}, 5000);
+
+delay(function (data) {
+    console.log(data);
+}, 4000);
+
+delay(function (data) {
+    console.log(data);
+}, 0);
+
+delay(function (data) {
+    console.log(data);
+}, 3000);
+delay(function (data) {
+    console.log(data);
+}, 3000);
+
+//setInterval
+function tick(callback) {
+    let timerId = setInterval(callback, 1000, Math.random());
+
+    setTimeout(function () {
+        clearInterval(timerId);
+        console.log('stopped timer')
+
+    }, 5000)
+}
+tick(function (data) {
+    console.log(data);
+})
+&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
+Callback Programming :
+
+use case 1 : callback based async data handling.
+
+
+
+const customers = [
+    { id: 1, name: 'A1' },
+    { id: 2, name: 'A2' },
+    { id: 3, name: 'A3' },
+    { id: 4, name: 'A4' },
+    { id: 5, name: 'A5' }
+];
+function findAllCustomers(callback) {
+    //return customers data async
+    setTimeout(callback, 5000, customers);
+}
+//api
+function fetchCustomers() {
+    console.log('start')
+    findAllCustomers(function (customers) {
+        console.log(customers);
+    });
+    console.log('end')
+}
+fetchCustomers();
+
+
+Use case 2 : what if async api throws error? :async error handling
+
+
+
+// const customers = [
+//     { id: 1, name: 'A1' },
+//     { id: 2, name: 'A2' },
+//     { id: 3, name: 'A3' },
+//     { id: 4, name: 'A4' },
+//     { id: 5, name: 'A5' }
+// ];
+let customers = null;
+const errors = "Customer not Found!!!";
+
+function findAllCustomers(successcallback, failurecallback) {
+    //biz logic , data checking
+    if (customers) {
+        setTimeout(successcallback, 5000, customers);
+    } else {
+        //handle errors
+        setTimeout(failurecallback, 5000, errors);
+    }
+}
+//api
+function fetchCustomers() {
+    findAllCustomers(function (customers) {
+        console.log(customers);
+    }, function (err) {
+        console.log(err);
+    });
+}
+fetchCustomers();
+
+Use case 3 : callback nesting: what if the output of one callback will be input to another another.
+ -sequential async composition.
+
+
+
+function getUser(resolve, reject) {
+    let fakeUser = {
+        id: 1,
+        name: 'admin'
+    }
+    let error = {
+        code: 500,
+        message: 'User not found!'
+    };
+    //biz logic
+    if (fakeUser) {
+        setTimeout(resolve, 1000, fakeUser)
+    } else {
+        setTimeout(reject, 1000, error)
+    }
+
+}
+function login(fakeUser, resolve, reject) {
+    let error = {
+        code: 500,
+        message: 'Login failed'
+    };
+    let success = {
+        code: 200,
+        message: 'Login success'
+    };
+    //biz logic
+    if (fakeUser.name === 'admin') {
+        setTimeout(resolve, 1000, success)
+    } else {
+        setTimeout(reject, 1000, error)
+    }
+}
+function showPage(status, resolve, reject) {
+    let guestPage = {
+        message: 'Welcome to Guest'
+    };
+    let adminPage = {
+        message: 'You are Admin!'
+    };
+    //biz logic
+    if (status.code === 200) {
+        setTimeout(resolve, 1000, adminPage)
+    } else {
+        setTimeout(reject, 1000, guestPage)
+    }
+}
+
+getUser(function (fakeUser) {
+    console.log('getUser');
+    login(fakeUser, function (status) {
+        console.log('login')
+        showPage(status, function (admin) {
+            console.log('Page')
+            console.log(admin)
+        }, function (guest) {
+            console.log(guest);
+        });
+
+    }, function (err) {
+        console.log(err);
+    });
+
+}, function (err) {
+    console.log(err);
+});
+
+
+Questions:
+
+1.Whether this is able to understand quickly
+2.Whether this code is able to debug
+3.Whehter this code is scalable?
+4.whether this code is maintaiable?
+
+ "No" : This is what we call as "Callback hell".
+
+
+fs.readdir(source, function (err, files) {
+  if (err) {
+    console.log('Error finding files: ' + err)
+  } else {
+    files.forEach(function (filename, fileIndex) {
+      console.log(filename)
+      gm(source + filename).size(function (err, values) {
+        if (err) {
+          console.log('Error identifying file size: ' + err)
+        } else {
+          console.log(filename + ' : ' + values)
+          aspect = (values.width / values.height)
+          widths.forEach(function (width, widthIndex) {
+            height = Math.round(width / aspect)
+            console.log('resizing ' + filename + 'to ' + height + 'x' + height)
+            this.resize(width, height).write(dest + 'w' + width + '_' + filename, function(err) {
+              if (err) console.log('Error writing file: ' + err)
+            })
+          }.bind(this))
+        }
+      })
+    })
+  }
+})
+
+callback hell is other wise called as "doom of pyrbid".
+
+///////////////////////////////////////////////////////////////////////////////////////////
+
+How to write better callback programming? or How to avoid callback hell?
+
+
+In 2005, JQUERY team started with working complex callback patterns, they found callback
+hell problem.
+
+They proposed a  Design pattern to write better callback programming(Async) programming.
+
+  "Promise".
+
+
+Promise is design pattern which hides complexity of callback patterns
+
+
+
+SInce Promise is design pattern, many people have implemented Promise design pattern.
+
+1.JQuery -first promise implementation
+2.many libs and frameworks
+
+2012 E6 Committee introduced "Promise" as Object in javascript
+
+
+
+features of Promise Object:
+
+1.Promise by deafult is Async. Which implements timer api with 0 ms .
+
+Promise can be used with any async implementations.
+
+Promise Implemenation:
+
+1. Create Promise Object from Promise contructor
+2. Create PRomise object from factory apis 
+
+Promise object methods:
+1.then - success
+2.catch - errors
+3.finally - clean up
+4.resolve
+5.reject
+6.all
+
+
+//basic promise creation
+/**
+ * promise are by default async
+ * Promise Object is created in two ways
+ */
+//callback style
+/**
+function getUser(callback) {
+    //async api
+    let fakeData = {
+        id: 1,
+        name: 'admin'
+    };
+    setTimeout(callback, 0, fakeData);
+}
+getUser(function(data){
+    console.log(data);
+})
+ */
+function getUser() {
+    //async api
+    let fakeData = {
+        id: 1,
+        name: 'admin'
+    };
+    return Promise.resolve(fakeData);
+}
+//get Promise
+//result
+console.log('start')
+let promiseResult = getUser();
+console.log('going');
+promiseResult.then(function (response) {
+    console.log(response);
+})
+console.log('end')
+
+
+/**
+ * Promise with errors
+ */
+
+function getErrors() {
+    return Promise.reject('Something went wrong!!!')
+}
+getErrors().catch(function (err) {
+    console.log(err);
+});
+
+&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
+//Promise.resolve and Promise.reject
+
+
+function getUser() {
+    let fakeData = {
+        id: 1,
+        name: 'admin'
+    };
+    let error = {
+        code: 500,
+        message: 'User not found!'
+    };
+    if (fakeData) {
+        return Promise.resolve(fakeData)
+    }
+    return Promise.reject(error)
+}
+getUser()
+    .then(function (response) {
+        console.log(response)
+    })
+    .catch(function (err) {
+        console.log(err);
+    })
+    .finally(function () {
+        console.log('done!')
+    });
+
+&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
+Promise Constructor pattern:
+
+-Used to create Promise powered apis which is already based on callback.
+
+
+//promise constructors
+
+
+function delay(data = "", timer = 1000) {
+    return new Promise(function (resolve, reject) {
+        //async callback logic
+        setTimeout(resolve, timer, data)
+    });
+}
+
+function processRequest(method, url) {
+    return new Promise(function (resolve, reject) {
+        var xhr = new XMLHttpRequest();
+        xhr.open(method, url);
+        xhr.onload = function () {
+            if (this.status >= 200 && this.status < 300) {
+                resolve(xhr.response);
+            } else {
+                reject({
+                    status: this.status,
+                    statusText: xhr.statusText
+                });
+            }
+        };
+        xhr.onerror = function () {
+            reject({
+                status: this.status,
+                statusText: xhr.statusText
+            });
+        };
+        xhr.send();
+    });
+}
+
+delay("Hello World")
+    .then(
+        function (response) {
+            console.log(response)
+        }
+    );
+
+processRequest('GET', 'https://jsonplaceholder.typicode.com/posts')
+    .then(function (posts) {
+        console.log(posts);
+    })
+    .catch(function (err) {
+        console.error('Augh, there was an error!', err.statusText);
+    });
+
+&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
+Promise chaining:
+function getUser() {
+    let fakeUser = {
+        id: 1,
+        name: 'admin'
+    }
+    let error = {
+        code: 500,
+        message: 'User not found!'
+    };
+    //biz logic
+    if (fakeUser) {
+        return Promise.resolve(fakeUser)
+    } else {
+        return Promise.reject(error);
+    }
+
+}
+function login(fakeUser) {
+    let error = {
+        code: 500,
+        message: 'Login failed'
+    };
+    let success = {
+        code: 200,
+        message: 'Login success'
+    };
+    //biz logic
+    if (fakeUser.name === 'admin') {
+        return Promise.resolve(success)
+
+    } else {
+        return Promise.reject(error);
+    }
+}
+function showPage(status) {
+    let guestPage = {
+        message: 'Welcome to Guest'
+    };
+    let adminPage = {
+        message: 'You are Admin!'
+    };
+    //biz logic
+    if (status.code === 200) {
+        return Promise.resolve(adminPage);
+
+    } else {
+        return Promise.reject(guestPage);
+
+    }
+}
+getUser()
+    .then(
+        function (fakeUser) {
+            console.log('get User')
+            login(fakeUser).then(
+                function (status) {
+                    console.log('login ')
+                    console.log(status);
+                }
+            ).catch(function (error) {
+                console.log(error);
+
+            });
+
+        }
+    )
+    .catch(function (err) {
+        console.log(error);
+    })
+
+//simifiled syntax
+getUser()
+    .then(
+        function (fakeUser) {
+            console.log('get User')
+            return login(fakeUser)
+        }
+    )
+    .then(
+        function (status) {
+            console.log('login  ')
+            return showPage(status)
+        }
+    )
+    .then(
+        function (page) {
+            console.log(' page ')
+            console.log(page)
+        }
+    )
+    .catch(function (err) {
+        console.log(error);
+    });
+
+&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
+Parallel Execution:
+
+lets say we want to many promises to execute in parallel and wait unitl all of them ready.
+
+eg:
+download data from several urls in paralle and process the content once they are all done.
+
+Promise.all([array of promises])
+
+
+
+//Parallel Execution
+
+function getOne() {
+    return Promise.resolve(1)
+}
+function getTwo() {
+    return Promise.resolve(2)
+}
+function getThree() {
+    return Promise.resolve(3)
+}
+function getFour() {
+    return Promise.resolve(4)
+}
+function getFive() {
+    return Promise.resolve(5)
+}
+
+function compose() {
+    return Promise.all([
+        getOne(), getTwo(), getThree(), getFour(), getFive()
+    ]);
+}
+compose().then(
+    function (res) {
+            console.log(res);
+    }
+)
+
+Parallel Execution:
+
+lets say we want to many promises to execute in parallel and dont want wait unitl all of them ready,
+rather than for first settled promise - either result or errors.
+
+Promise.race()
+
+
+//Parallel Execution
+
+function getOne() {
+    return Promise.resolve(1)
+}
+function getTwo() {
+    return Promise.resolve(2)
+}
+function getThree() {
+    return Promise.resolve(3)
+}
+function getFour() {
+    return Promise.resolve(4)
+}
+function getFive() {
+    return Promise.resolve(5)
+}
+
+
+function race() {
+    return Promise.race([
+        getOne(), getTwo(), getThree(), getFour(), getFive()
+    ]);
+}
+
+
+race().then(
+    function (res) {
+        console.log(`Race ${res}`);
+    }
+)
+
+
+
+&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&Problems in Promise handling: Promise chaining:
+
+//simifiled syntax
+getUser()
+    .then(
+        function (fakeUser) {
+            console.log('get User')
+            return login(fakeUser)
+        }
+    )
+    .then(
+        function (status) {
+            console.log('login  ')
+            return showPage(status)
+        }
+    )
+    .then(
+        function (page) {
+            console.log(' page ')
+            console.log(page)
+        }
+    )
+    .catch(function (err) {
+        console.log(error);
+    });
+
+Here code is so complex to understand
+
+ -more then blocks
+ -may have more catch blocks
+
+Which leads "Promise" Hell.
+
+ES 7 Brought a solution called "async and await keywords"
+
+
+async keyword:
+
+is used in front of function declaration : async functions.
+
+async function features:
+
+-retuns Promise by default with resolve condition.
+
+//async function
+
+
+
+async function getName() {
+    return 'Hello Subramanian' // return Promise.resolve('Hello Subramanian')
+}
+getName().then(function (res) {
+    console.log(res);
+})
+
+"async await keywords help to write async programming like sync style"
+
+
+
+function getUser() {
+    let fakeUser = null
+    let error = {
+        code: 500,
+        message: 'User not found!'
+    };
+    //biz logic
+    if (fakeUser) {
+        return Promise.resolve(fakeUser)
+    } else {
+        return Promise.reject(error);
+    }
+}
+
+function login(fakeUser) {
+    let error = {
+        code: 500,
+        message: 'Login failed'
+    };
+    let success = {
+        code: 200,
+        message: 'Login success'
+    };
+    //biz logic
+    if (fakeUser.name === 'admin') {
+        return Promise.resolve(success)
+
+    } else {
+        return Promise.reject(error);
+    }
+}
+function showPage(status) {
+    let guestPage = {
+        message: 'Welcome to Guest'
+    };
+    let adminPage = {
+        message: 'You are Admin!'
+    };
+    //biz logic
+    if (status.code === 200) {
+        return Promise.resolve(adminPage);
+
+    } else {
+        return Promise.reject(guestPage);
+
+    }
+}
+
+
+//main method
+// function start() {
+// getUser().then(
+//     function (res) {
+//         console.log(res);
+//     }
+// ).catch(function (err) {
+//     console.log(err);
+// })
+// }
+
+async function start() {
+
+    try {
+        let user = await getUser();
+        let status = await login(user);
+        let page = await showPage(status);
+        console.log(user, status, page);
+    }
+    catch (err) {
+        console.log(err)
+    }
+    finally {
+        console.log('done');
+    }
+}
+start()
+
+&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
+Arrow functions;
+
+-eleminates function declaration syntax.
+//arrow function 
+
+//old syntax
+// const greet = function () {
+//     console.log('greet');
+// };
+// greet()
+//arrow syntax;
+const greet = () => {
+    console.log('greet');
+};
+greet();
+//if function has single of body.remove {}
+const sayHai = () => console.log('hai');
+sayHai();
+
+//parameters and args 
+//multi parameters 
+const add = (a = 0, b = 0) => {
+    const result = a + b;
+    console.log(result);
+};
+add(10, 10)
+//single parameter, no default value, remove () and 
+const counter = count => console.log(count);
+counter(10)
+
+const substract = (a = 0, b = 0) => {
+    const result = a + b;
+    return result;
+};
+console.log(substract(10, 10))
+//only return no extra body
+const multiply = (a = 0, b = 0) => a * b;
+console.log(multiply(10, 10))
+///////////////////////////////////////////////////////////////////////////////
+
+//arrow and funciton as parameter
+const createServer = server => server();
+createServer(() => console.log('Http Server'));
+let httpServer = () => console.log('Http Server');
+createServer(httpServer);
+//async api and arrow functions
+
+const getUser = (resolve, reject) => {
+    let fakeUser = {
+        id: 1,
+        name: 'admin'
+    }
+    let error = {
+        code: 500,
+        message: 'User not found!'
+    };
+    //biz logic
+    if (fakeUser) {
+        setTimeout(resolve, 1000, fakeUser)
+    } else {
+        setTimeout(reject, 1000, error)
+    }
+};
+const login = (fakeUser, resolve, reject) => {
+    let error = {
+        code: 500,
+        message: 'Login failed'
+    };
+    let success = {
+        code: 200,
+        message: 'Login success'
+    };
+    //biz logic
+    if (fakeUser.name === 'admin') {
+        setTimeout(resolve, 1000, success)
+    } else {
+        setTimeout(reject, 1000, error)
+    }
+};
+const showPage = (status, resolve, reject) => {
+    let guestPage = {
+        message: 'Welcome to Guest'
+    };
+    let adminPage = {
+        message: 'You are Admin!'
+    };
+    //biz logic
+    if (status.code === 200) {
+        setTimeout(resolve, 1000, adminPage)
+    } else {
+        setTimeout(reject, 1000, guestPage)
+    }
+};
+
+getUser(fakeUser => {
+    console.log('getUser');
+    login(fakeUser, status => {
+        console.log('login')
+        showPage(status, admin => {
+            console.log('Page')
+            console.log(admin)
+        }, guest => {
+            console.log(guest);
+        });
+    }, err => console.log(err));
+
+}, err => console.log(err));
+&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+Static and dynamic programming:
+..............................
+
+static means parsing time expression binding
+
+dynamic means runtime epxression binding.
+
+expression ; collection of variables and its binding.
+
+eg:
+ var a =10; // expression
+
+scope;
+ Visitbility of variables.
+ Where it is visible
+
+Where means: The place where we have declared variables. 
+
+variable declaration places;
+
+1.inside script file.
+2.inside function
+3.function args.
+
+es 6:
+1.inside class
+2.inside script -modules
+
+
+"When visibility of a variable is activated"?
+
+Phases:
+ - Parsing phase
+ - Execution/ run time phase
+
+Types of scopes:
+
+1.static scope / lexical scope
+2.dynamic scope -
+3.augmented scope - deprecated in js now a days.
+
+1.static scope:
+
+A langauge implements static scope, if only by looking at the source code one can determine in which
+environment a binding is resolved.
+
+How to implement lexical scope/ static scope?
+
+//static scope.
+
+var a = 10;
+
+function print_a() {
+    console.log(`print_a function ${a}`);
+}
+
+function run() {
+    var a = 100;
+    console.log(`run method ${a}`);
+    print_a()
+}
+run();
+
+variable "a" for print_a function is free,since it's neither a parameter , nor a local variable of this function.
+
+The  variable "a'  is captured / bound / attached to print_a function ?
+
+ "during print_a function is created / initalized"
+
+ -lexcial scope / static scope.
+
+
+var a = 10;
+
+function fun1() {
+
+    console.log(`fun1 ${a}`);
+
+    function fun2() {
+        var a = 8;
+        console.log(`fun2 ${a}`);
+
+        function fun3() {
+            // var a = 8;
+            console.log(`fun3 ${a}`);
+
+        }
+        fun3()
+    }
+    fun2();
+
+}
+fun1()
+
+Variable binding resolution or scope chain:
+...........................................
+
+Lexical environment: 
+A lexical environment is a structure used to define association between identifiers(variables)
+appearing in the context with their values. 
+Each environment can have a reference to an optional parent environment.
+
+So an environment is a storage of variables, functions, and classes defined in a scope.
+
+Types of env:
+
+1.Global Environment
+2.function environment
+
+Each environment is data structure- Hash table/Dictionary : key-value pair
+
+-key :
+Record:Value
+Parent:Value
+
+Value of Record would be another dictionary
+value of Parent is "pointer to another env"
+
+What record can have?
+Information about that env, storage information.
+
+Globlal Environment is env which hold other envs : Global Context
+
+
+let x = 10;
+let y = 20;
+ 
+function foo(z) {
+  let x = 100;
+  return x + y + z;
+}
+ 
+foo(30); // 150
+
+Look up theory:
+
+when a variable is accessed by a function.
+
+-It is looks in the current "Environment Record", if not present it will look its parent and so untile
+global env. if not present any where , it will throw error -"not defined"
+
+
+
+//inside script
+var x = 10;
+var y = 20;
+
+function foo(z) {
+    //inside function
+    let x = 100;
+    return x + y + z;
+}
+
+let r = foo(30); // 150
+console.log(r);
+
+var a = 10;
+
+function fun1() {
+
+    console.log(`fun1 ${a}`);
+
+    function fun2() {
+        var a = 88888;
+
+        console.log(`fun2 ${a}`);
+
+        function fun3() {
+            console.log(`fun3 ${a}`);
+        }
+        fun3()
+    }
+    fun2();
+
+}
+fun1()
+&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
+Dynamic binding:
+
+Dynamic scope:
+ if a language implements dynamic scope, if a "caller" who is calling function defines an activation
+environment of a "callee".
+
+Caller =>Object
+Callee =>function
+
+
+How to implement dynamic scope?
+
+ "With help of this keyword"
+
+var a=10; -----the variable a binding is identied during parsing time. ; lexcial scope.
+
+this = ? value of this identied during runitme/execution time not lexcial
+
+this;
+
+- in js this value is dynamically scoped.
+
+who will supply that value?
+
+ the value of "this" is determined and provided exactly by the caller
+
+//////////////////////////////////////////////////////////////////////////////////////////////////////
+
+Points:
+
+- value of this may be changed in javascript mode.
+
+modes:
+
+1.strict
+2.non-strict
 
 
 
 
 
+function sayHello() {
+    return this; //value of this , will determine that function belongs to whom.
+}
+console.log(sayHello());
+
+if run this code in browser, the result would be "Window".
+
+Window is Object in browser.
+
+
+By default , any function is delclared inside script, that function belongs to Window object
+
+
+function sayHello() {
+    return this; //value of this , will determine that function belongs to whom.
+}
+console.log(sayHello());
+
+
+function fun1() {
+
+    console.log('fun 1')
+    function fun2() {
+        console.log('fun2')
+        return this;
+    }
+    console.log(fun2());
+
+    return this;
+}
+console.log(fun1());
+
+
+"this keyword"  is just built in variable like a,b, but its value always points the address of object
+ this=object
+
+
+Owner of function :
+
+ in javascript , functions are part of object in general. in browser by default functions belong to
+"window" object.
+
+javascript introduced a concept strict mode:
+............................................
+
+strict mode is mode which enables best practices, disable worest syntax and code by default.
+
+how to enable strict mode
+
+"use strict"
+
+Owner of function in browser with strict mode:
+
+in strict the value of this would be undefined : The owner of the function  is not decided.
+
+
+how to bind function with object dynamically or how to change the owener of function?
+
+function has methods. in javascript function itself is object.
+
+function object provides api
+
+1.call
+2.apply
+3.bind
+
+you change the owner.
+
+
+1.call
+
+ call(target,parameter1,parameter2)
+
+
+function sayHello(name='default',location='default loc') {
+    console.log(`${this.message} ${name} ${location}`)
+    return this; //value of this , will determine that function belongs to whom.
+}
+
+//declare owner/caller : object
+let greetings = {
+    message: 'Hello'
+};
+
+sayHello.call(greetings,'Subramanian','Coimbatore')
+
+//change owner
+let hai ={
+    message:'Hai'
+}
+sayHello.call(hai);
+
+//window.message='window message'
+//sayHello.call(window);
+
+
+2.apply
+
+ apply(target,array)
+
+ apply and call is same but only second args different ,
+ array.
+
+
+//apply
+function getStocks(...stocks) {
+    console.log(this.name,stocks)
+}
+const google = {
+    name: 'Google Stock'
+};
+
+getStocks.apply(google, [{ id: 1, value: 20 }])
+
+
+bind:
+ lazy invocation, it wont call, when call bind methods.
+bind method will return function, that later can be called.
+
+
+"use strict"
+
+function sayHello(name = 'default', location = 'default loc') {
+    console.log(`${this.message} ${name} ${location}`)
+    return this; //value of this , will determine that function belongs to whom.
+}
+
+//declare owner/caller : object
+let greetings = {
+    message: 'Hello'
+};
+
+sayHello.call(greetings, 'Subramanian', 'Coimbatore')
+
+//change owner
+let hai = {
+    message: 'Hai'
+}
+sayHello.call(hai);
+
+//window.message='window message'
+//sayHello.call(window);
+
+//apply
+function getStocks(...stocks) {
+    console.log(this.name, stocks)
+}
+const google = {
+    name: 'Google Stock'
+};
+
+getStocks.apply(google, [{ id: 1, value: 20 }])
+
+//bind
+let newGreeterref = sayHello.bind(greetings, 'John', 'Delhi');
+
+setTimeout(() => newGreeterref(), 1000)
+
+&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+Closure: closed over
+.........
+
+A closure is a function which captures the environment where it’s defined. Further this environment is used for identifier resolution.
+
+a function is called in a fresh activation environment which stores local variables, and arguments. The parent environment of the activation environment is set to the closured environment of the function, resulting to the lexical scope semantics
+
+//Closure
+
+function foo() {
+    let x = 10;
+    // Closure, capturing environment of `foo`.
+    function bar() {
+        return ++x;
+    }
+    return bar;
+}
+// Call to `foo` returns `bar` closure.
+let bar = foo();
+
+console.log(bar()); 
+console.log(bar()); 
+console.log(bar()); 
+
+"the activation environment of foo would be destroyed. But we captured it, so it cannot be deallocated, and is preserved — to support static scope semantics."
+
+Lexcial scope and Dynamic scope together :
+.........................................
+
+//'use strict'
+//lexcial scope and this keyword:
+
+//this and function binding : owner of function.
+//when owner is decided , during runtime. 
+//owner is decied by calll,apply,bind and direct call.
+
+//window.name = 'my frined'
+
+const training = {
+    name: 'Subramanian',
+    teach: function () {
+        console.log('teach function', this.name);
+
+        //inner function
+        function learn() {
+            console.log('learn function')
+            console.log(this.name, 'is teaching');
+        }
+        learn(); // is called on global object
+
+    }
+};
+//teach is method of training object, name is property of training object
+training.teach()
+
+points:
+
+- when u call learn method, this bounds to global object in non strict mode.
+
+what if i want to access name property of training object inside learn method.
+
+
+soultions:
+
+1.using self semantic
+
+const training = {
+    name: 'Subramanian',
+    teach: function () {
+        console.log('teach function', this.name);
+        var self =  this;
+        //inner function
+        function learn() {
+            console.log('learn function')
+            //console.log(this.name, 'is teaching');
+            console.log(self.name, 'is teaching');
+        }
+        learn(); // is called on global object
+
+    }
+};
+//teach is method of training object, name is property of training object
+training.teach()
+
+2.using training reference variable
+const training = {
+    name: 'Subramanian',
+    teach: function () {
+        console.log('teach function', this.name);
+        var self =  this;
+        //inner function
+        function learn() {
+            console.log('learn function')
+            //console.log(this.name, 'is teaching');
+           // console.log(self.name, 'is teaching');
+           console.log(training.name,'is teaching');
+        }
+        learn(); // is called on global object
+
+    }
+};
+//teach is method of training object, name is property of training object
+training.teach()
+
+
+3.call learn method using training object reference via call/apply/bind pattern
+
+
+
+const training = {
+    name: 'Subramanian',
+    teach: function () {
+        console.log('teach function', this.name);
+        var self =  this;
+        //inner function
+        function learn() {
+            console.log('learn function')
+            console.log(this.name, 'is teaching');
+           // console.log(self.name, 'is teaching');
+          // console.log(training.name,'is teaching');
+        }
+        learn.call(training);
+
+    }
+};
+//teach is method of training object, name is property of training object
+training.teach()
+
+4.return the funciton and call latter
+
+//'use strict'
+//lexcial scope and this keyword:
+
+//this and function binding : owner of function.
+//when owner is decided , during runtime. 
+//owner is decied by calll,apply,bind and direct call.
+
+//window.name = 'my frined'
+
+const training = {
+    name: 'Subramanian',
+    teach: function () {
+        console.log('teach function', this.name);
+        var self = this;
+        //inner function
+        return function () {
+            console.log('learn function')
+            console.log(this.name, 'is teaching');
+            // console.log(self.name, 'is teaching');
+            // console.log(training.name,'is teaching');
+        }
+        // learn.call(training);
+
+    }
+};
+//teach is method of training object, name is property of training object
+let learn = training.teach()
+learn.call(training);
+
+
+5.without using function.call/apply/bind how to attach function with object.
+
+Arrow function:
+
+-simplifes our code.
+-arrow is lexically scoped with this keyword
+
+
+//'use strict'
+//lexcial scope and this keyword:
+
+//this and function binding : owner of function.
+//when owner is decided , during runtime. 
+//owner is decied by calll,apply,bind and direct call.
+
+//window.name = 'my frined'
+
+const training = {
+    name: 'Subramanian',
+    teach: function () {
+        console.log('teach function', this.name);
+        var self = this;
+        //inner function
+        // return function () {
+        //     console.log('learn function')
+        //     console.log(this.name, 'is teaching');
+        //     // console.log(self.name, 'is teaching');
+        //     // console.log(training.name,'is teaching');
+        // }
+        // learn.call(training);
+        return () => {
+            console.log('learn function')
+            console.log(this.name, 'is teaching');
+        }
+
+    }
+};
+//teach is method of training object, name is property of training object
+let learn = training.teach()
+learn();
+//learn.call(training);
+
+&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
+Modularity:
+
+javascript is fundamentally file based modularity.
+
+2000 js community brought design patterns in order to build professional javascript apps.
+
+1.namespace design pattern
+2.amd design pattern
+3.commonjs
+4.ES 6 module 
+5.system
+6.UMD
+
+ONLY 2 design patterns are used in development
+
+1. commonjs 
+2. es 6 module
+
+commonjs:
+ simple design pattern used in node based applications even today.
+
+commonjs design pattern implemented in node.js by default.
+
+commonjs provides some keywords:
+
+for code sharing 
+exports,module.exports
+
+file linking 
+require();
+
+
+
+
+//code ; could be any thing.
+
+exports.name = 'Subramanian';
+exports.city = 'Coimbatore';
+exports.state = 'Tamil Nadu';
+exports.cost = 1000;
+exports.isActive = true;
+exports.calculateCost = function () {
+    return 1000;
+}
+exports.types = ['mobiles','computers']
+
+const info = require('./mylib');
+
+console.log(info);
+
+
+what is exports?
+
+ exports is just variable, its value is empty literal object
+
+what is require()
+ funciton , which is called, returns an object.
+
+
+module.exports is opsit to exports.
+
+it does return object, rather it returns what you return.
+
+only one you can return
+
+
+
+
+/**
+ * function require(fileName){
+ * var exports = {}
+ * var module.exports;
+ * if(exportsUsed){
+ *   return exports
+ * }
+ * return module.exports
+ * 
+ * 
+ * }
+ */
+
+function Employee(){
+    this.id =1;
+    this.name ='subramanian'
+}
+
+module.exports = Employee;
+
+
+const info = require('./mylib');
+const Employee = require('./Employee')
+
+console.log(info);
+
+const emp = new Employee();
+console.log(emp)
+
+
+const USERS = require('../data/UserData');
+
+
+function UserService() {
+    //methods :async api 
+    this.findAll = function () {
+        return new Promise((resolve, reject) => {
+            setTimeout(resolve, 5000, JSON.stringify(USERS));
+        });
+    }
+
+}
+
+module.exports = UserService;
+
+const UserService = require('./services/UserService');
+
+
+//function
+async function startApp() {
+    let service = new UserService();
+    console.log('loading')
+    try {
+        let users = await service.findAll();
+        console.log(users);
+    }
+    catch (err) {
+        console.log(err);
+    }
+    finally {
+        console.log('done!!!')
+    }
+
+}
+startApp();
+&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
+es 6 object features
+
+1.class 
 
 
 
 
 
+//es 6 classes to create object
+// function Employee(){
+//     this.id =1;
+//     this.name ='Subramaian'
+//     this.calculateSalary=function(){
+//         return 1000
+//     }
+// }
+// class Employee {
+//     //direct initalization
+//     id = 1;
+//     name = 'Subramaian'
+//     calculateSalary() {
+//         return 1000
+//     }
+// }
+// let emp = new Employee()
+// emp.name="ram"
+// console.log(emp);
+class Employee {
+    //direct initalization
+    constructor(id = 0, name = 'default') {
+        this.id = id;
+        this.name = name;
+    }
+    calculateSalary() {
+        return 1000
+    }
+}
+let emp = new Employee(2, 'ram')
+emp.name = "ram"
+console.log(emp);
+
+&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+
+Object Hierachy:
+
+ Object relationship
+
+-IS-A -Inheritance
+-HAS-A -composition
 
 
+//has-a
+
+class Order {
+    constructor(orderId = 'A0001') {
+        this.orderid = orderId;
+    }
+}
+class Customer {
+    constructor(name = 'default', order = new Order()) {
+        this.name = name;
+        this.order = order; //has-a
+    }
+}
+let customer = new Customer('Subramanian',new Order('B001'))
+console.log(customer)
 
 
+IS-A :
+
+Prototype: 
+A prototype is a delegation object used to implement prototype-based inheritance.
+
+Every object, when is created, receives its prototype. If the prototype is not set explicitly, objects receive default prototype as their inheritance object.
+
+Prototype chain: 
+A prototype chain is a finite chain of objects used to implement inheritance and shared properties.
+
+Delegation: 
+a mechanism used to resolve a property in the inheritance chain. The process happens at runtime, hence is also called dynamic dispatch.
+
+class A{} class B inherts A{}
+
+in other languages, inheirtance is decided during compiletime but in js it is runtime.
 
 
+ProtoType is Object, used to share properties to many instances.
+
+ if you have object-single , instances copy of many objects
+
+how to add shared property:
+ property can be access by many instances
 
 
+//object destrucing
 
+// function  getEmployee(employee){
+//     console.log(employee.id)
+//     console.log(employee.name)
+// }
 
+// function getEmployee(employee) {
+//     const { id, name } = employee;
+//     console.log(id)
+//     console.log(name)
+// }
+// function getEmployee({id,name}) {
+//     console.log(id)
+//     console.log(name)
+// }
+const getEmployee = employee => {
+    const { id, name } = employee;
+    console.log(id)
+    console.log(name)
+}
+getEmployee({ id: 1, name: 'foo' })
 
+const { log } = console;
 
+// const getStock = (value, symbol) => {
+//     return {
+//         value: value,
+//         symbol: symbol
+//     }
+// };
+// const getStock = (value, symbol) =>({
+//         value: value,
+//         symbol: symbol
+// });
+const getStock = (value, symbol) =>({
+    value,
+    symbol
+});
+log(getStock(100, 'GOOGLE'))
+&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
 
+ES 6 module ; 
 
+es 6 module =  amd + cjs + namespace
 
+export, export default
+
+import
+
+how to run es 6 modules inside node and browser,
+
+ -you need loader.
+
+webpack
 
 
 
